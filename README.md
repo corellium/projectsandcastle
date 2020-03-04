@@ -12,3 +12,9 @@ Android/Linux for the iPhone
 Kernel can be obtained from our fork of linux-stable:
 
 https://github.com/corellium/linux-sandcastle
+
+## Buildroot
+
+The Sandcastle Linux ramdisk is built using buildroot. Our customizations are here:
+
+https://github.com/corellium/sandcastle-buildroot
