@@ -1,0 +1,31 @@
+
+  How to build Sandcastle AOSP
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, obtain AOSP 10.0.0_r3 according to instructions at:
+
+    https://source.android.com/setup/build/downloading
+
+You can use branch android-10.0.0_r3 to speed up check-out.
+
+After this, apply the attached diff file to the repository.
+
+Then, you will need to install a 16kB page compatible build
+of WebView:
+
+    cp webview.apk external/chromium-webview/prebuilt/arm64
+
+Finally, unpack the OpenLauncher APK and the NAND tool:
+
+    tar -C packages/apps/openlauncher xzf openlauncher.tar.gz
+    tar xzf build-nand-1.1.tar.gz
+
+After this, run build.sh (adjust -j for your CPU count) and
+give it a while. If it goes well, you are ready to build the
+NAND image:
+
+    cd build-nand-1.1
+    ./filldisk.sh
+
+This will produce a file called 'nand' containing the required
+partition layout.
