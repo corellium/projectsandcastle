@@ -6,6 +6,7 @@ Android/Linux for the iPhone
 * `loader/` loads kernel and device tree via pongoOS
 * `syscfg/` tool to extract configuration information from syscfg partition on devices
 * `hx-touchd/` touch screen support daemon
+* `hcdpack/` tool to heuristically extract Bluetooth firmware from binaries
 
 ## Kernel
 
