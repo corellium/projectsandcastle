@@ -43,6 +43,7 @@ struct hxt_metrics {
 #define MT_SPI_Z2_WAKE_CMD      0xEE
 
 static mtfw_item_t *mt_firmware;
+static unsigned mt_type;
 
 static int bootload(int fd)
 {
@@ -104,6 +105,11 @@ static int bootload(int fd)
 
     for(iter=mt_firmware; iter; iter=iter->next) {
         switch(iter->type) {
+        case MTFW_SET_TYPE:
+            mt_type = 0;
+            memcpy(&mt_type, iter->data, iter->size);
+            break;
+
         case MTFW_WRITE:
         case MTFW_WRITE_ACK:
             if(ioctl(fd, HXT_IOC_SET_CS, 1)) {
@@ -216,6 +222,14 @@ static int send_wake(int fd)
     return send_z2(fd, cmd, NULL);
 }
 
+static unsigned bytesum(const unsigned char *ptr, unsigned num)
+{
+    unsigned sum = 0;
+    while(num)
+        sum += *(ptr ++);
+    return sum;
+}
+
 static int read_report(int fd, unsigned char rpt, unsigned char *buf, unsigned *plen)
 {
     unsigned char cmd[16] = { MT_REP_INFO, rpt };
@@ -248,7 +262,15 @@ static int read_report(int fd, unsigned char rpt, unsigned char *buf, unsigned *
     pbuf = malloc(rlen + 5);
     if(!pbuf)
         return 1;
-    memset(pbuf, 0xA5, rlen + 5);
+    if(mt_type == 1) {
+        memset(pbuf, 0, rlen + 5);
+        pbuf[0] = MT_CTRL_READ_LONG;
+        pbuf[1] = rpt;
+        pbuf[2] = 1;
+        put16le(pbuf + 3, rlen);
+        put16le(pbuf + rlen + 3, bytesum(pbuf, rlen + 3));
+    } else
+        memset(pbuf, 0xA5, rlen + 5);
     if(ioctl(fd, HXT_IOC_SET_CS, 1)) {
         free(pbuf);
         perror("failed asserting CS#");
@@ -392,7 +414,16 @@ retry:
     hxtm.bottom = (short)get16le(d9 + 10);
     ioctl(fd, HXT_IOC_METRICS, &hxtm);
 
-    write_report(fd, 0xAF, (unsigned char *)"\x00", 1);
+    switch(mt_type) {
+    case 1:
+        write_report(fd, 0x9D, (unsigned char *)"\x01\x00\x00\x00\x00\x00\x00\x00", 8);
+        write_report(fd, 0xBF, (unsigned char *)"\x9D\x81\x09\x00", 4);
+        write_report(fd, 0xAF, (unsigned char *)"\x00", 1);
+        break;
+    case 2:
+        write_report(fd, 0xAF, (unsigned char *)"\x00", 1);
+        break;
+    }
 
     ioctl(fd, HXT_IOC_READY);
 
