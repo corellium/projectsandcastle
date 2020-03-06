@@ -116,8 +116,8 @@ int main(int argc, char *argv[])
     unsigned i;
 
     if(argc != 2 && argc != 6) {
-        fprintf(stderr, "usage: autohcd <hcd-pack>\n");
-        fprintf(stderr, "       autohcd <hcd-pack> <otp-chip> <module> <otp-nvram> <outfile>\n");
+        fprintf(stderr, "usage: hcdpack <hcd-pack>\n");
+        fprintf(stderr, "       hcdpack <hcd-pack> <otp-chip> <module> <otp-nvram> <outfile>\n");
         return 1;
     }
 
@@ -150,6 +150,13 @@ int main(int argc, char *argv[])
     }
     sprintf(chipstr, "BCM%s%s ", chip, rev);
     sprintf(modstr, " %s %s", mod, vendstr);
+
+    /* this chip has different names on WLAN and Bluetooth */
+    if(!strcmp(chipstr, "BCM43452A3 ")) {
+        strcpy(chip, "4345");
+        strcpy(rev, "C1");
+        strcpy(chipstr, "BCM4345C1 ");
+    }
 
     for(i=0; i<nimages; i++) {
         if(strncmp(images[i].name, chipstr, strlen(chipstr)))

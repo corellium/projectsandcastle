@@ -225,7 +225,7 @@ static int send_wake(int fd)
 static unsigned bytesum(const unsigned char *ptr, unsigned num)
 {
     unsigned sum = 0;
-    while(num)
+    while(num --)
         sum += *(ptr ++);
     return sum;
 }
